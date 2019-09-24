@@ -34,6 +34,10 @@
   #include "scara.h"
 #endif
 
+#if HAS_BED_PROBE
+  #include "probe.h"
+#endif
+
 // Axis homed and known-position states
 extern uint8_t axis_homed, axis_known_position;
 constexpr uint8_t xyz_bits = _BV(X_AXIS) | _BV(Y_AXIS) | _BV(Z_AXIS);
@@ -124,8 +128,10 @@ XYZ_DEFS(signed char, home_dir, HOME_DIR);
 #if HAS_HOTEND_OFFSET
   extern float hotend_offset[XYZ][HOTENDS];
   void reset_hotend_offsets();
-#else
+#elif HOTENDS > 0
   constexpr float hotend_offset[XYZ][HOTENDS] = { { 0 }, { 0 }, { 0 } };
+#else
+  constexpr float hotend_offset[XYZ][1] = { { 0 }, { 0 }, { 0 } };
 #endif
 
 typedef struct { float min, max; } axis_limits_t;
@@ -197,8 +203,9 @@ FORCE_INLINE void do_blocking_move_to(const float (&raw)[XYZE], const float &fr_
   do_blocking_move_to(raw[X_AXIS], raw[Y_AXIS], raw[Z_AXIS], fr_mm_s);
 }
 
-void setup_for_endstop_or_probe_move();
-void clean_up_after_endstop_or_probe_move();
+void remember_feedrate_and_scaling();
+void remember_feedrate_scaling_off();
+void restore_feedrate_and_scaling();
 
 //
 // Homing
